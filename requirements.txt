@@ -1,0 +1,3 @@
+# Runtime dependency for the TLS-style handshake lab.
+# AES-256-GCM and Ed25519 come from this single, well-audited library.
+cryptography>=42.0.0

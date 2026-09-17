@@ -1,0 +1,5 @@
+__pycache__/
+*.pyc
+# The server's long-term private key is generated at runtime - never commit it.
+server_identity.key
+.DS_Store

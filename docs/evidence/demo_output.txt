@@ -1,0 +1,176 @@
+
+========================================================================
+  SCENARIO 1 - Normal handshake, INSECURE mode (baseline)
+========================================================================
+Expected: handshake completes, application data is AES-256-GCM encrypted.
+
+[SERVER] listening on 127.0.0.1:9001  mode=INSECURE (no server auth)
+
+[SERVER] connection from ('127.0.0.1', 49564)
+
+[CLIENT]  1. Sent ClientHello
+[CLIENT]     client_random = 948a855ff0667d5d772893a0a21068d7...(32B)
+[SERVER]  1. Received ClientHello
+[SERVER]     client_random = 948a855ff0667d5d772893a0a21068d7...(32B)
+[SERVER]     offered suites = ['DHE-HKDF-SHA256-AES256GCM']
+[SERVER]  2. Generated ephemeral DH key pair (g^b mod p)
+[SERVER]     server DH public = 0dfb6e1c7e2f975601300372b77554d1...(256B)
+[SERVER]  3. Sent ServerHello (UNauthenticated)
+[CLIENT]  2. Received ServerHello
+[CLIENT]     server_random = 97714b1907b1cbaf4e81452c8acf2354...(32B)
+[CLIENT]     chosen suite = DHE-HKDF-SHA256-AES256GCM
+[CLIENT]  3. Sent ClientKeyExchange (g^a mod p)
+[CLIENT]     client DH public = 03a6dd43e9a70f29e8178760c625c31d...(256B)
+[CLIENT]  4. Derived session keys via HKDF-SHA256
+[CLIENT]     shared secret = d7d4471340fcbb10070e1ef4840c6e33...(256B)
+[CLIENT]  5. Sent client Finished MAC
+[SERVER]  4. Received ClientKeyExchange
+[SERVER]     client DH public = 03a6dd43e9a70f29e8178760c625c31d...(256B)
+[SERVER]  5. Derived session keys via HKDF-SHA256
+[SERVER]     shared secret = d7d4471340fcbb10070e1ef4840c6e33...(256B)
+[SERVER]     client_write_key = a79fed425fe6369416b0fbf86e88ac0d6c50ed5ee21db272b6a9f1f6888fd740
+[SERVER]     server_write_key = 9acbf186cab3e011a581335a87f0499b5273393a5983862a4a0eecddd85e0d4c
+[SERVER]  6. Verified client Finished MAC (transcript intact)
+[SERVER]  7. Sent server Finished MAC -> handshake COMPLETE
+[CLIENT]  6. Verified server Finished MAC -> handshake COMPLETE
+[CLIENT]  7. Sent encrypted application data: 'Mihyar'
+[SERVER]  8. Received encrypted application data
+[SERVER]     decrypted client message: 'Mihyar'
+[SERVER]  9. Sent encrypted reply -> session closing
+[CLIENT]  8. Received + decrypted server reply
+[CLIENT]     server said: 'Hello Mihyar - this channel is AES-256-GCM encrypted.'
+
+========================================================================
+  SCENARIO 2 - MITM attack against the INSECURE handshake
+========================================================================
+Expected: the attacker sits in the middle and reads all 'encrypted' traffic.
+
+[SERVER] listening on 127.0.0.1:9002  mode=INSECURE (no server auth)
+
+[MITM] listening on 127.0.0.1:9102, upstream=127.0.0.1:9002
+
+[CLIENT]  1. Sent ClientHello
+[CLIENT]     client_random = b523326871065e6e6769510b1d7784eb...(32B)
+[MITM]  1. Intercepted ClientHello from victim
+[SERVER] connection from ('127.0.0.1', 49566)
+
+[SERVER]  1. Received ClientHello
+[SERVER]     client_random = efa4b733edab5e739371f73dc3ae6513...(32B)
+[SERVER]     offered suites = ['DHE-HKDF-SHA256-AES256GCM']
+[SERVER]  2. Generated ephemeral DH key pair (g^b mod p)
+[SERVER]     server DH public = 017d8c1f52abba86d6397732b07392a2...(256B)
+[SERVER]  3. Sent ServerHello (UNauthenticated)
+[MITM]  2. Sent FORGED ServerHello to victim (attacker DH key)
+[CLIENT]  2. Received ServerHello
+[CLIENT]     server_random = 24c8c1dcd8dec963e8c31b686c184e76...(32B)
+[CLIENT]     chosen suite = DHE-HKDF-SHA256-AES256GCM
+[CLIENT]  3. Sent ClientKeyExchange (g^a mod p)
+[CLIENT]     client DH public = bb40ff09425730e11856e2581230ced0...(256B)
+[CLIENT]  4. Derived session keys via HKDF-SHA256
+[CLIENT]     shared secret = 130d59e67d6526e49d07ce4a7a6398a8...(256B)
+[MITM]  3. Derived leg-A session keys (attacker <-> victim)
+[CLIENT]  5. Sent client Finished MAC
+[MITM]     leg-A shared secret = 130d59e67d6526e49d07ce4a7a6398a8...(256B)
+[MITM]  4. Derived leg-B session keys (attacker <-> real server)
+[SERVER]  4. Received ClientKeyExchange
+[SERVER]     client DH public = eab82c34bbefc04b2ca42cf3d31fa91c...(256B)
+[SERVER]  5. Derived session keys via HKDF-SHA256
+[SERVER]     shared secret = 69ea0172542b7c4e01bed2f993cf1be0...(256B)
+[SERVER]     client_write_key = f0d3c9c2ca4032a1ed74a8c3defaf48a60dcb8a3cf68fd6215a49c1d21fb2df0
+[SERVER]     server_write_key = 835819413d3d121211671cda6d8bd58b2d44a088b387a3325cc509f8a2ef415a
+[CLIENT]  6. Verified server Finished MAC -> handshake COMPLETE
+[SERVER]  6. Verified client Finished MAC (transcript intact)
+[SERVER]  7. Sent server Finished MAC -> handshake COMPLETE
+[CLIENT]  7. Sent encrypted application data: 'Mihyar'
+[MITM]  5. Completed BOTH handshakes -> attacker now holds two session keys
+[MITM]  6. !!! DECRYPTED victim -> server traffic in the clear:
+[MITM]         stolen plaintext = 'Mihyar'
+[SERVER]  8. Received encrypted application data
+[SERVER]     decrypted client message: 'Mihyar'
+[SERVER]  9. Sent encrypted reply -> session closing
+[MITM]  7. !!! DECRYPTED server -> victim traffic in the clear:
+[MITM]         stolen plaintext = 'Hello Mihyar - this channel is AES-256-GCM encrypted.'
+[MITM]  8. Relay complete -- victims saw a normal session, attacker read everything
+[CLIENT]  8. Received + decrypted server reply
+[CLIENT]     server said: 'Hello Mihyar - this channel is AES-256-GCM encrypted.'
+
+========================================================================
+  SCENARIO 3 - MITM attack against the SECURE (authenticated) handshake
+========================================================================
+Expected: the client detects the forged key and ABORTS. Attack defeated.
+
+[SERVER] listening on 127.0.0.1:9003  mode=SECURE (authenticated)
+
+[MITM] listening on 127.0.0.1:9103, upstream=127.0.0.1:9003
+
+[CLIENT]  1. Sent ClientHello
+[CLIENT]     client_random = e4786fab540e762441a7296c5043b2e5...(32B)
+[SERVER] connection from ('127.0.0.1', 49568)
+
+[MITM]  1. Intercepted ClientHello from victim
+[SERVER]  1. Received ClientHello
+[SERVER]     client_random = e57769aabc64b434fc3783c95c3402f0...(32B)
+[SERVER]     offered suites = ['DHE-HKDF-SHA256-AES256GCM']
+[SERVER]  2. Generated ephemeral DH key pair (g^b mod p)
+[SERVER]     server DH public = c56f0b195776a7950fc255bc4b72ed7e...(256B)
+[SERVER]     secure mode: signed DH public key with long-term Ed25519 key
+[SERVER]  3. Sent ServerHello (authenticated)
+[MITM]     secure target: forwarding stale signature (will fail on victim)
+[MITM]  2. Sent FORGED ServerHello to victim (attacker DH key)
+[CLIENT]  2. Received ServerHello
+[CLIENT]     server_random = 023f5a3940f9e6f5ddd6d0f2741c1e90...(32B)
+[CLIENT]     chosen suite = DHE-HKDF-SHA256-AES256GCM
+
+[CLIENT] !! HANDSHAKE ABORTED: Invalid server signature - possible MITM!
+[MITM]  3. Victim closed the connection -> attack DEFEATED (server was authenticated)
+[SERVER] session ended early: Connection closed before message was complete
+
+========================================================================
+  SCENARIO 4 - Normal handshake, SECURE mode (fix keeps normal use working)
+========================================================================
+Expected: authenticated handshake completes normally for the honest client.
+
+[SERVER] listening on 127.0.0.1:9004  mode=SECURE (authenticated)
+
+[SERVER] connection from ('127.0.0.1', 49569)
+
+[CLIENT]  1. Sent ClientHello
+[CLIENT]     client_random = e24d94d978cd5171470c2d07b631859b...(32B)
+[SERVER]  1. Received ClientHello
+[SERVER]     client_random = e24d94d978cd5171470c2d07b631859b...(32B)
+[SERVER]     offered suites = ['DHE-HKDF-SHA256-AES256GCM']
+[SERVER]  2. Generated ephemeral DH key pair (g^b mod p)
+[SERVER]     server DH public = e112ad89aabcf3f1b6412108d88ff6c3...(256B)
+[SERVER]     secure mode: signed DH public key with long-term Ed25519 key
+[SERVER]  3. Sent ServerHello (authenticated)
+[CLIENT]  2. Received ServerHello
+[CLIENT]     server_random = 15d53a47596e89eee98166adbc2c28b8...(32B)
+[CLIENT]     chosen suite = DHE-HKDF-SHA256-AES256GCM
+[CLIENT]  3. Verified server signature + pinned key (server authenticated)
+[CLIENT]  4. Sent ClientKeyExchange (g^a mod p)
+[CLIENT]     client DH public = aef19cdf9189f27fe35df00fa7825f1d...(256B)
+[CLIENT]  5. Derived session keys via HKDF-SHA256
+[CLIENT]     shared secret = 2f288cf46d392369be2228ebd75efb2f...(256B)
+[SERVER]  4. Received ClientKeyExchange
+[SERVER]     client DH public = aef19cdf9189f27fe35df00fa7825f1d...(256B)
+[SERVER]  5. Derived session keys via HKDF-SHA256
+[SERVER]     shared secret = 2f288cf46d392369be2228ebd75efb2f...(256B)
+[SERVER]     client_write_key = b75fca5620caf6631de65202be17e9b635a5ecb407d5888aebaa64faf4fef253
+[SERVER]     server_write_key = b25bab34eba5d9edb5e67c721ae4d1f0feeb70a113673df1bb9cdf6f22023aa9
+[CLIENT]  6. Sent client Finished MAC
+[SERVER]  6. Verified client Finished MAC (transcript intact)
+[SERVER]  7. Sent server Finished MAC -> handshake COMPLETE
+[CLIENT]  7. Verified server Finished MAC -> handshake COMPLETE
+[CLIENT]  8. Sent encrypted application data: 'Mihyar'
+[SERVER]  8. Received encrypted application data
+[SERVER]     decrypted client message: 'Mihyar'
+[SERVER]  9. Sent encrypted reply -> session closing
+[CLIENT]  9. Received + decrypted server reply
+[CLIENT]     server said: 'Hello Mihyar - this channel is AES-256-GCM encrypted.'
+
+========================================================================
+  DEMO COMPLETE
+========================================================================
+Server identity (pinned Ed25519 public key): b575f32b94a31b0995d0ad355c2e27491f3d6a70ff6c83819b9b3d6d51bf3b3c
+Summary: authentication of the key exchange is what stops the MITM.
+
