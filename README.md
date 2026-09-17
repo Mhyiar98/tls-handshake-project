@@ -1,9 +1,9 @@
 # TLS Handshake Walkthrough — Simplified Client/Server over Sockets
 
 **Information Security — Semester Project (Summer 2026)**
-**Student:** Mihyar Al-Taher Al-Mustiri
+**Student:** Mhyiar Elmistere
 **Instructor:** Ms. Nada Salaheddin Gheriyani
-**Security area:** Network security protocol · **Tools:** Python 3 + sockets + `cryptography`
+**Security area:** Network security protocol · **Tools:** Python 3 + sockets
 
 ---
 
