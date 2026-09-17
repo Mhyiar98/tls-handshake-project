@@ -13,7 +13,7 @@ In secure mode the client verifies the server's Ed25519 signature over the
 DH public key against a pinned public key. If the key does not match (as it
 would not for a man-in-the-middle), the client ABORTS the handshake.
 
-Author: Mihyar Al-Taher Al-Mustiri
+Author: Mhyiar Elmistere
 """
 
 from __future__ import annotations

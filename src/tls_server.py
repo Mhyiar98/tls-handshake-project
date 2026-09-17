@@ -19,7 +19,7 @@ Handshake performed here (server view):
     5. Exchange Finished MACs     (verify the whole transcript)
     6. Exchange encrypted data    (AES-256-GCM application records)
 
-Author: Mihyar Al-Taher Al-Mustiri
+Author: Mhyiar Elmistere
 """
 
 from __future__ import annotations

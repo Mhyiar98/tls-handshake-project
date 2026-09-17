@@ -12,7 +12,7 @@ The tests prove the three properties the report claims:
   * a tampered/forged DH public produces DIFFERENT keys (MITM cannot match),
   * AES-256-GCM rejects any modification of the ciphertext (integrity).
 
-Author: Mihyar Al-Taher Al-Mustiri
+Author: Mhyiar Elmistere
 """
 
 import os

@@ -16,7 +16,7 @@ server on 127.0.0.1. It exists to demonstrate and then defend against the flaw.
     client  <-->  [ MITM proxy ]  <-->  real server
              leg A                leg B
 
-Author: Mihyar Al-Taher Al-Mustiri
+Author: Mhyiar Elmistere
 """
 
 from __future__ import annotations

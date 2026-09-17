@@ -17,7 +17,7 @@ Nothing here is meant to *replace* a real TLS stack. It is an educational
 implementation for an Information Security semester project. Where we take a
 shortcut compared to production TLS, the comment says so explicitly.
 
-Author : Mihyar Al-Taher Al-Mustiri
+Author : Mhyiar Elmistere
 Course : Information Security - Semester Project (Summer 2026)
 """
 
